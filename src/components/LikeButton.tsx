@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "../supabase-client";
 import { useAuth } from "../context/AuthContext";
 
@@ -50,6 +50,7 @@ const vote = async (voteValue: number, postId: number, userId: string) => {
 
 export const LikeButton = ({postId}: Props) => {
     const { user } = useAuth();
+    const queryClient = useQueryClient();
 
     const fetchVotes = async (postId: number): Promise<Vote[]> => {
         const {data, error} = await supabase
@@ -76,6 +77,10 @@ export const LikeButton = ({postId}: Props) => {
             if (!user) throw new Error("You must be logged in to vote.");
 
             return vote(voteValue, postId, user!.id)
+        },
+
+        onSuccess: () => {
+            queryClient.invalidateQueries({queryKey: ["votes", postId]})
         }
     });
 
@@ -91,16 +96,23 @@ export const LikeButton = ({postId}: Props) => {
 
     const likes = votes?.filter((v) => v.vote === 1).length || 0;
     const dislikes = votes?.filter((v) => v.vote === -1).length || 0;
+    const userVote = votes?.find((v) => v.user_id === user?.id)?.vote;
 
     return (
-        <div>
+        <div className="flex items-center space-x-4 my-4">
             <button
                 onClick={() => mutate(1)}
+                className={`px-3 py-1 cursor-pointer rounded transition-colors duration-150 ${
+                    userVote === 1 ? "bg-green-500 text-white" : "bg-gray-200 text-black"
+                }`}
             >
                 👍 {likes}
             </button>
             <button
                 onClick={() => mutate(-1)}
+                className={`px-3 py-1 cursor-pointer rounded transition-colors duration-150 ${
+                    userVote === -1 ? "bg-red-500 text-white" : "bg-gray-200 text-black"
+                }`}
             >
                 👎 {dislikes}
             </button>
