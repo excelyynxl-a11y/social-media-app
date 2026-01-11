@@ -1,12 +1,14 @@
 import { useState, type ChangeEvent } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { supabase } from "../supabase-client";
 import { useAuth } from "../context/AuthContext";
+import { fetchCommunities, type Community } from "./CommunityList";
 
 interface PostInput {
     title: string;
     content: string;
     avatar_url: string | null;
+    community_id?: number | null;
 }
 
 const createPost = async (post: PostInput, imageFile: File) => {
@@ -23,6 +25,7 @@ const createPost = async (post: PostInput, imageFile: File) => {
     const {data, error} = await supabase
         .from("posts")
         .insert({...post, image_url: publicURLData.publicUrl });
+    
     if (error) throw new Error(error.message);
 
     return data;
@@ -31,13 +34,20 @@ const createPost = async (post: PostInput, imageFile: File) => {
 export const CreatePost = () => {
     const [title, setTitle] = useState<string>("");
     const [content, setContent] = useState<string>(""); 
+    const [communityId, setCommunityId] = useState<number | null>(null); 
     const [selectedFile, setSelectedFile] = useState<File | null>(null); 
-    const { user } = useAuth();
+    const { user } = useAuth(); 
+
+    const { data: communities } = useQuery<Community[], Error>({ 
+        queryKey: ["communities"],
+        queryFn: fetchCommunities
+    })
+
 
     const { mutate, isPending, isError } = useMutation({
         mutationFn: (data: { post: PostInput; imageFile: File}) => {
             return createPost(data.post, data.imageFile)
-        }
+        },
     })
     const handleSubmit = (event: React.FormEvent) => {
         event.preventDefault(); 
@@ -46,10 +56,15 @@ export const CreatePost = () => {
             post: {
                 title, 
                 content, 
-                avatar_url: user?.user_metadata.avatar_url || null
+                avatar_url: user?.user_metadata.avatar_url || null,
+                community_id: communityId,
             }, 
             imageFile: selectedFile 
         });
+    }
+    const handleCommunityChange = (e: ChangeEvent<HTMLSelectElement>) => {
+        const value = e.target.value;
+        setCommunityId(value ? Number(value) : null);
     }
     const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
@@ -93,6 +108,30 @@ export const CreatePost = () => {
                     rows={5}
                     required
                 />
+            </div>
+
+            <div>
+                <label>
+                    Select Community 
+                </label>
+                <select
+                    id="community"
+                    onChange={handleCommunityChange}
+                >
+                    <option
+                        value={""}
+                    >
+                        -- Choose a Community --
+                    </option>
+                    {communities?.map((community, key) => (
+                        <option
+                            key={key}
+                            value={community.id}
+                        >
+                            {community.name}
+                        </option>
+                    ))}
+                </select>
             </div>
 
             <div>
