@@ -39,7 +39,7 @@ export const Navbar = () => {
                             Communities 
                         </Link>
                         <Link 
-                            to={"/comunity/create"}
+                            to={"/community/create"}
                             className="text-gray-300 hover:text-white transition-colors"
                         > 
                             Create Community 
@@ -143,7 +143,7 @@ export const Navbar = () => {
                             Communities 
                         </Link>
                         <Link 
-                            to="/comunity/create"
+                            to="/community/create"
                             onClick={() => setMenuOpen(false)} 
                             className="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:text-white hover:bg-gray-700"
                         > 
