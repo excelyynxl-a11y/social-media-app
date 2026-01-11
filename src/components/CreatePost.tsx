@@ -26,7 +26,7 @@ const createPost = async (post: PostInput, imageFile: File) => {
         .from("posts")
         .insert({...post, image_url: publicURLData.publicUrl });
     
-    if (error) throw new Error(error.message);
+        if (error) throw new Error(error.message);
 
     return data;
 }
