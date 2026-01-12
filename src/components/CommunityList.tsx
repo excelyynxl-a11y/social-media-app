@@ -27,7 +27,7 @@ export const CommunityList = () => {
 
     if (isLoading) {
         return (
-            <div>
+            <div className="text-center py-4">
                 Loading communities...
             </div>
         )
@@ -35,7 +35,7 @@ export const CommunityList = () => {
 
     if (error) {
         return (
-            <div>
+            <div className="text-center text-red-500 py-4">
                 Error: {error.message}
             </div>
         )
@@ -43,13 +43,13 @@ export const CommunityList = () => {
 
     return (
         <div className="max-w-5xl mx-auto space-y-4">
-            {data?.map((community, key) => (
+            {data?.map((community) => (
                 <div 
-                    key={key}
+                    key={community.id}
                     className="border border-white/10 p-4 rounded hover:translate-y-1 transition transform"
                 >
                     <Link 
-                        to="community"
+                        to={`/community/${community.id}`}
                         className="text-2xl font-bold text-purple-500 hover:underline"
                     >
                         {community.name}
